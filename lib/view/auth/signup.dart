@@ -9,6 +9,31 @@ class Signup extends StatefulWidget {
 }
 
 class _SignupState extends State<Signup> {
+  bool showPass = false;
+  bool showPass2 = false;
+  final formState = GlobalKey<FormState>();
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+
+  // ==== Validate Email ====
+  bool isEmailValid(String email) {
+    RegExp regex = RegExp(
+      r"^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$",
+    );
+    return regex.hasMatch(email);
+  }
+
+  void signIn() {
+    if (formState.currentState!.validate()) {
+      debugPrint(nameController.text);
+      debugPrint(emailController.text);
+      debugPrint(passwordController.text);
+      debugPrint(confirmPasswordController.text);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -45,11 +70,20 @@ class _SignupState extends State<Signup> {
                 ),
                 // ===== Form Sign Up ====
                 Form(
+                  key: formState,
                   child: Column(
                     children: [
                       // =====Enter Full Name====
                       TextFormField(
+                        controller: nameController,
                         keyboardType: TextInputType.text,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            debugPrint('Name is empty');
+                            return 'Name is empty';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           hintText: 'Enter your full name',
                           label: const Text('Full name'),
@@ -72,7 +106,18 @@ class _SignupState extends State<Signup> {
                       const SizedBox(height: 10.0),
                       // =====Enter field Email====
                       TextFormField(
+                        controller: emailController,
                         keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            debugPrint('email is empty');
+                            return 'email is empty';
+                          } else if (!isEmailValid(value)) {
+                            debugPrint('ERROR email');
+                            return 'ERROR email';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           hintText: 'Enter your email or username',
                           label: const Text('Email or username'),
@@ -95,7 +140,19 @@ class _SignupState extends State<Signup> {
                       const SizedBox(height: 10.0),
                       // =====Enter field password====
                       TextFormField(
+                        controller: passwordController,
                         keyboardType: TextInputType.text,
+                        obscureText: !showPass,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            debugPrint('password is empty');
+                            return 'password is empty';
+                          } else if (value.length < 6) {
+                            debugPrint('Password too short');
+                            return 'Password too short';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
                           label: const Text('Password'),
@@ -106,9 +163,15 @@ class _SignupState extends State<Signup> {
                               fontWeight: FontWeight.w400),
                           prefixIcon: const Icon(Icons.vpn_key_sharp),
                           suffixIcon: IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              setState(() {
+                                showPass = !showPass;
+                              });
+                            },
                             icon: Icon(
-                              Icons.visibility_off,
+                              showPass
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
@@ -124,7 +187,19 @@ class _SignupState extends State<Signup> {
                       const SizedBox(height: 15.0),
                       // =====Enter confirm password====
                       TextFormField(
+                        controller: confirmPasswordController,
                         keyboardType: TextInputType.text,
+                        obscureText: !showPass2,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            debugPrint('Confirm password is empty');
+                            return 'Confirm password is empty';
+                          } else if (passwordController.text != confirmPasswordController.text) {
+                            debugPrint('ERROR: Password do not match');
+                            return 'ERROR: Password do not match';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           hintText: 'Enter your confirm password',
                           label: const Text('Confirm password'),
@@ -135,9 +210,15 @@ class _SignupState extends State<Signup> {
                               fontWeight: FontWeight.w400),
                           prefixIcon: const Icon(Icons.vpn_key_sharp),
                           suffixIcon: IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              setState(() {
+                                showPass2 = !showPass2;
+                              });
+                            },
                             icon: Icon(
-                              Icons.visibility_off,
+                              showPass2
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
@@ -154,7 +235,9 @@ class _SignupState extends State<Signup> {
                       // =====Button submit login====
                       InkWell(
                         onTap: () {
-
+                          setState(() {
+                            signIn();
+                          });
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 5.0),
@@ -201,7 +284,10 @@ class _SignupState extends State<Signup> {
                     InkWell(
                       onTap: () {
                         setState(() {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginScreens()));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginScreens()));
                         });
                       },
                       child: const Text(
